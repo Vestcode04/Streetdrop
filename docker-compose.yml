@@ -1,0 +1,18 @@
+services:
+  db:
+    image: postgres:18
+    container_name: streetdrop_db
+
+    environment:
+      POSTGRES_USER: streetdrop
+      POSTGRES_PASSWORD: streetdrop_dev
+      POSTGRES_DB: streetdrop
+
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

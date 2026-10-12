@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, selectinload
 
 from app.database import get_db
 from app.models import Product, Category
@@ -34,17 +35,33 @@ async def create_product(
 async def get_products(
     db: AsyncSession = Depends(get_db)
 ):
-    result = await db.execute(
-        select(Product).options(selectinload(Product.category))
-    )
+    result = await db.execute(select(Product))
     products = result.scalars().all()
 
     return products
 
+@router.get("/{product_id}", response_model=ProductResponse)
+async def get_product(
+    product_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(
+        select(Product).options(selectinload(Product.category)).where(Product.id == product_id)
+    )
+    product = result.scalar_one_or_none()
+
+    if product is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Продукт не найден"
+        )
+
+    return product
+
 @router.patch("/{product_id}", response_model=ProductResponse)
 async def update_product(
     product_id: int,
-    product_update: ProductCreate,
+    product_update: ProductUpdate,
     db: AsyncSession = Depends(get_db)
 ):
     product = await db.get(Product, product_id)
@@ -55,7 +72,25 @@ async def update_product(
             detail="Продукт не найден"
         )
 
-    for key, value in product_update.model_dump().items():
+    update_data = product_update.model_dump(exclude_unset=True)
+
+    for field in ("name", "price", "category_id"):
+        if field in update_data and update_data[field] is None:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Поле {field} не может быть null"
+            )
+
+    if "category_id" in update_data:
+        category = await db.get(Category, update_data["category_id"])
+
+        if category is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Категория не найдена"
+            )
+
+    for key, value in update_data.items():
         setattr(product, key, value)
 
     await db.commit()
@@ -80,4 +115,3 @@ async def delete_product(
     await db.commit()
 
     return None
-    

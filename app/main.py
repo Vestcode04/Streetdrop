@@ -2,10 +2,11 @@ from fastapi import FastAPI
 from sqlalchemy import text
 
 from app.database import engine
-from app.routers import categories
+from app.routers import categories , products
 
 app = FastAPI(title="StreetDrop API")
 app.include_router(categories.router)
+app.include_router(products.router)
 
 @app.get("/")
 async def home():

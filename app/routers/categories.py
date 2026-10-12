@@ -88,3 +88,21 @@ async def update_category(
     await db.refresh(category)
 
     return category
+
+@router.delete("/{category_id}", status_code=204)
+async def delete_category(
+    category_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    category = await db.get(Category, category_id)
+
+    if category is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Категория не найдена"
+        )
+
+    await db.delete(category)
+    await db.commit()
+
+    return None

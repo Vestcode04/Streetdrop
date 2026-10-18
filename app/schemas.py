@@ -1,5 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field
-
+from decimal import Decimal
+from app.models import Category, Product
 
 class CategoryCreate(BaseModel):
     name: str = Field(min_length=2, max_length=100)
@@ -17,11 +18,12 @@ class CategoryUpdate(BaseModel):
 class ProductCreate(BaseModel):
     name: str = Field(min_length=2, max_length=100)
     description: str | None = Field(default=None, max_length=255)
-    price: float = Field(gt=0)
-    category_id: int    
+    price: Decimal = Field(gt=0, max_digits=10, decimal_places=2)
+    category_id: int = Field(gt=0)
 
-class ProductResponse(BaseModel):
-    id : int
+
+class ProductResponse(ProductCreate):
+    id: int
 
     model_config = ConfigDict(from_attributes=True)
 

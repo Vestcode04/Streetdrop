@@ -5,7 +5,7 @@ from sqlalchemy.exc import IntegrityError
 
 from app.database import get_db
 from app.models import Category
-from app.schemas import CategoryCreate, CategoryResponse
+from app.schemas import CategoryCreate, CategoryResponse, CategoryUpdate
 
 router = APIRouter(
     prefix="/categories",
@@ -63,7 +63,7 @@ async def get_category(
 @router.patch("/{category_id}", response_model=CategoryResponse)
 async def update_category(
     category_id: int,
-    category_update: CategoryCreate,
+    category_update: CategoryUpdate,
     db: AsyncSession = Depends(get_db)
 ):
     category = await db.get(Category, category_id)
@@ -102,7 +102,25 @@ async def delete_category(
             detail="Категория не найдена"
         )
 
-    await db.delete(category)
-    await db.commit()
+    result = await db.execute(
+        select(Product.id)
+        .where(Product.category_id == category_id)
+        .limit(1)
+    )
 
-    return None
+    if result.scalar_one_or_none() is not None:
+        raise HTTPException(
+            status_code=409,
+            detail="Нельзя удалить категорию, в которой есть товары"
+        )
+
+    await db.delete(category)
+
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail="Категория связана с товарами"
+        )

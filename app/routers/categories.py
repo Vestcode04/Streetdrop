@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 from app.database import get_db
-from app.models import Category
+from app.models import Category, Product
 from app.schemas import CategoryCreate, CategoryResponse, CategoryUpdate
 
 router = APIRouter(

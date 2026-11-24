@@ -45,6 +45,7 @@ class UserResponse(BaseModel):  # что мы отправляем клиент�
     id: int  # номер пользователя
     username: str  # имя
     email: EmailStr  # почта
+    is_admin: bool  # является ли пользователь администратором
     # Поля password здесь нет специально: пароль и хеш клиенту отдавать нельзя
 
     model_config = ConfigDict(from_attributes=True)  # разрешаем строить ответ из объекта SQLAlchemy (User)

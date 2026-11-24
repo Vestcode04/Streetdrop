@@ -4,8 +4,9 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
-from app.models import Product, Category
+from app.models import Product, Category, User
 from app.schemas import ProductCreate, ProductResponse, ProductUpdate
+from app.dependencies import get_current_admin
 
 
 router = APIRouter(prefix="/products", tags=["Products"])
@@ -14,7 +15,8 @@ router = APIRouter(prefix="/products", tags=["Products"])
 @router.post("/", response_model=ProductResponse, status_code=201)
 async def create_product(
     product: ProductCreate,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_admin)
 ):
     category = await db.get(Category, product.category_id)
 

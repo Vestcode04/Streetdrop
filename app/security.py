@@ -5,7 +5,7 @@ import jwt
 from dotenv import load_dotenv 
 from pwdlib import PasswordHash  
 
-load_dotenv()  # читаем файл .env
+load_dotenv()  
 
 SECRET_KEY = os.getenv("SECRET_KEY")  
 ALGORITHM = os.getenv("ALGORITHM", "HS256")  

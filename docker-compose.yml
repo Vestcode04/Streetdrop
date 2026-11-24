@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:18
+    image: postgres:17
     container_name: streetdrop_db
 
     environment:
@@ -9,7 +9,7 @@ services:
       POSTGRES_DB: streetdrop
 
     ports:
-      - "5433:5432"
+      - "5432:5432"
 
     volumes:
       - postgres_data:/var/lib/postgresql

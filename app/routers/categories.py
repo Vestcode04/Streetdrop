@@ -4,8 +4,9 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 from app.database import get_db
-from app.models import Category, Product
+from app.models import Category, Product, User
 from app.schemas import CategoryCreate, CategoryResponse, CategoryUpdate
+from app.dependencies import get_current_admin
 
 router = APIRouter(
     prefix="/categories",
@@ -15,7 +16,8 @@ router = APIRouter(
 @router.post("/", response_model=CategoryResponse,status_code=201)
 async def create_category(
     category: CategoryCreate,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_admin)  
 ):
     new_category = Category(name=category.name)
 

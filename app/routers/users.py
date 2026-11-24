@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.exc import IntegrityError  
 from sqlalchemy.ext.asyncio import AsyncSession  
 
+from app.dependencies import get_current_user  
 from app.database import get_db  # функция, которая выдаёт сессию базы
 from app.models import User  # модель пользователя
 from app.schemas import UserCreate, UserResponse  # наши схемы
@@ -37,3 +38,9 @@ async def create_user(
     await db.refresh(new_user)  # перечитываем из базы, чтобы появился id
 
     return new_user  # возвращаем; response_model оставит только id, username, email
+
+@router.get("/me", response_model=UserResponse)
+async def read_current_user(
+    current_user: User = Depends(get_current_user),  
+):
+    return current_user  # возвращаем текущего пользователя
